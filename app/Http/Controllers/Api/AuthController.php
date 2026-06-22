@@ -24,7 +24,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'User registered successfully',
-            'user' => $user
+            'user' => $user,
         ], 201);
     }
 
@@ -38,9 +38,9 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (!Auth::attempt($credentials)) {
+        if (! Auth::attempt($credentials)) {
             return response()->json([
-                'message' => 'Invalid credentials'
+                'message' => 'Invalid credentials',
             ], 401);
         }
 
@@ -50,7 +50,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Login successful',
             'access_token' => $token,
-            'user' => $user
+            'user' => $user,
         ]);
     }
 
@@ -70,7 +70,7 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
-            'message' => 'Logged out successfully'
+            'message' => 'Logged out successfully',
         ]);
     }
 }
