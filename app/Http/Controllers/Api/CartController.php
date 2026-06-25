@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CartItemRequest;
+use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
@@ -10,28 +12,32 @@ use Illuminate\Http\JsonResponse;
 class CartController extends Controller
 {
     /**
-     * Add a product to the user's cart.
+     * Add a cart item to the user's cart.
      *
      * @return JsonResponse
      */
-    public function add(Product $product)
+    public function addCartItem(CartItemRequest $request)
     {
-        $cart = auth()->user()->cart;
+        $cart = Cart::firstOrCreate([
+            'user_id' => auth()->id(),
+        ]);
+
+        $data = $request->validated();
 
         $item = CartItem::firstOrCreate(
             [
                 'cart_id' => $cart->id,
-                'product_id' => $product->id,
+                'product_id' => $data['product_id'],
             ],
             [
                 'quantity' => 0,
             ]
         );
 
-        $item->increment('quantity');
+        $item->increment('quantity', $data['quantity']);
 
         return response()->json([
-            'message' => 'Product added to cart',
+            'message' => 'Cart item added successfully',
         ]);
     }
 
@@ -40,7 +46,9 @@ class CartController extends Controller
      */
     public function index()
     {
-        $cart = auth()->user()->cart;
+        $cart = Cart::firstOrCreate([
+            'user_id' => auth()->id(),
+        ]);
 
         $items = CartItem::with('product')
             ->where('cart_id', $cart->id)
@@ -50,28 +58,67 @@ class CartController extends Controller
     }
 
     /**
-     * Remove a product from the user's cart.
+     * Decrease the quantity of a cart item.
      *
      * @return JsonResponse
      */
-    public function remove(Product $product)
+    public function remove(CartItemRequest $request)
     {
-        $cart = auth()->user()->cart;
+        $data = $request->validated();
 
-        $item = CartItem::where('cart_id', $cart->id)
-            ->where('product_id', $product->id)
-            ->first();
+        $item = $this->getCartItem($data['product_id']);
 
-        if ($item) {
-            $item->decrement('quantity');
+        if (! $item) {
+            return response()->json([
+                'message' => 'Item not found in cart',
+            ], 404);
+        }
 
-            if ($item->quantity <= 0) {
-                $item->delete();
-            }
+        $item->decrement('quantity', $data['quantity']);
+
+        if ($item->fresh()->quantity <= 0) {
+            $item->delete();
         }
 
         return response()->json([
-            'message' => 'Product removed from cart',
+            'message' => 'Cart item quantity updated',
         ]);
+    }
+
+    /**
+     * Remove a cart item from the user's cart.
+     */
+    public function removeCartItem(CartItem $cartItem)
+    {
+        $cart = Cart::firstOrCreate([
+            'user_id' => auth()->id(),
+        ]);
+
+        $item = CartItem::where('id', $cartItem->id)
+            ->where('cart_id', $cart->id)
+            ->first();
+
+        if (! $item) {
+            return response()->json([
+                'message' => 'Item not found in cart',
+            ], 404);
+        }
+
+        $item->delete();
+
+        return response()->json([
+            'message' => 'Cart item removed successfully',
+        ]);
+    }
+
+    private function getCartItem(int $productId): ?CartItem
+    {
+        $cart = Cart::firstOrCreate([
+            'user_id' => auth()->id(),
+        ]);
+
+        return CartItem::where('cart_id', $cart->id)
+            ->where('product_id', $productId)
+            ->first();
     }
 }

@@ -21,9 +21,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('products', ProductController::class);
 
-    Route::post('/cart/add', [CartController::class, 'add']);
     Route::get('/cart', [CartController::class, 'index']);
-    Route::delete('/cart/remove/{id}', [CartController::class, 'remove']);
+    Route::post('/cart/add-item', [CartController::class, 'addCartItem']);
+    Route::post('/cart/remove', [CartController::class, 'remove']); // decrement quantity
+    Route::delete('/cart/cart-items/{cart_item}', [CartController::class, 'removeCartItem']); // remove product completely
 
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/checkout', [OrderController::class, 'checkout']);
