@@ -2,11 +2,9 @@
 
 namespace App\Builders;
 
-use App\Models\AccessLog;
 use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
-use Silber\Bouncer\BouncerFacade;
 
 class OrderBuilder extends Builder
 {

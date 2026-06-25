@@ -2,11 +2,17 @@
 
 namespace App\Models;
 
+use App\Builders\ProductBuilder;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
     protected $guarded = ['id'];
+
+    public function newEloquentBuilder($builder)
+    {
+        return new ProductBuilder($builder);
+    }
 
     public function orderItems()
     {

@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ProductRequest extends FormRequest
+class RegisterRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,19 +25,21 @@ class ProductRequest extends FormRequest
         return [
             'name' => [
                 'required',
+                'string',
+                'max:255',
             ],
-            'price' => [
+            'email' => [
                 'required',
-                'numeric',
-                'min:0',
+                'string',
+                'email',
+                'max:255',
+                'unique:users',
             ],
-            'stock' => [
+            'password' => [
                 'required',
-                'integer',
-                'min:0',
-            ],
-            'description' => [
-                'required',
+                'string',
+                'min:8',
+                'confirmed',
             ],
         ];
     }

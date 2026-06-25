@@ -22,8 +22,8 @@ class OrderController extends Controller
 
         $orders = Order::with('items.product')
             ->where('user_id', auth()->id())
-            ->orderBy('created_at', 'desc')
             ->applyFilters($request->all())
+            ->orderBy('created_at', 'desc')
             ->paginateData($limit);
 
         if ($request->has('expand')) {
