@@ -3,14 +3,42 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\OrderResource;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
+    /**
+     * Get the authenticated user's orders
+     */
+    public function index(Request $request)
+    {
+        $limit = $request->has('limit') ? $request->limit : 10;
+
+        $orders = Order::with('items.product')
+            ->where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc')
+            ->applyFilters($request->all())
+            ->paginateData($limit);
+
+        if ($request->has('expand')) {
+            $orders->loadMissing($request->expand);
+        }
+
+        return OrderResource::collection($orders)
+         ->additional(['meta' => [
+                'orders_count' => Order::count(),
+            ]]);
+    }
+
+    /**
+     * Checkout the cart and create an order
+     */
     public function checkout()
     {
         $cart = Cart::with('items.product')

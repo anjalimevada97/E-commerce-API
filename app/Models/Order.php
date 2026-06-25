@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Builders\OrderBuilder;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
@@ -27,6 +28,11 @@ class Order extends Model
     const PAYMENT_STATUS_FAILED = 'failed';
 
     const PAYMENT_STATUS_REFUNDED = 'refunded';
+
+    public function newEloquentBuilder($builder)
+    {
+        return new OrderBuilder($builder);
+    }
 
     public function items()
     {
